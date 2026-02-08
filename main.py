@@ -4,6 +4,7 @@ from src.case_studies import (
     show_scenario_1, show_scenario_2, show_scenario_3, show_scenario_4,
     show_scenario_5, show_scenario_6, show_scenario_7, show_scenario_8, show_scenario_9
 )
+from src.db import initialize_database
 
 # Page Config
 st.set_page_config(
@@ -31,6 +32,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def main():
+    # Initialize Database (Auto-create if missing)
+    initialize_database()
+    
     with st.sidebar:
         st.title("PhonePe Pulse")
         st.markdown("### Analysis Scenarios")

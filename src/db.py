@@ -1,15 +1,44 @@
+import os
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 import urllib.parse
-from src.config import DB_CONFIG
+from src.config import DB_CONFIG, DB_TYPE, SQLITE_DB_PATH, MYSQL_CONFIG
+try:
+    from src.schema import SCHEMA_DEFINITIONS
+except ImportError:
+    SCHEMA_DEFINITIONS = []
 
 def get_engine():
     """
-    Creates and returns a SQLAlchemy engine for MySQL connection.
+    Creates and returns a SQLAlchemy engine based on DB_TYPE.
     """
-    password = urllib.parse.quote_plus(DB_CONFIG['password'])
-    conn_str = f"mysql+pymysql://{DB_CONFIG['user']}:{password}@{DB_CONFIG['host']}/{DB_CONFIG['database']}"
+    if DB_TYPE == 'sqlite':
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(SQLITE_DB_PATH), exist_ok=True)
+        return create_engine(f"sqlite:///{SQLITE_DB_PATH}")
+    
+    # Legacy MySQL Support
+    password = urllib.parse.quote_plus(MYSQL_CONFIG['password'])
+    conn_str = f"mysql+pymysql://{MYSQL_CONFIG['user']}:{password}@{MYSQL_CONFIG['host']}/{MYSQL_CONFIG['database']}"
     return create_engine(conn_str)
+
+def initialize_database():
+    """
+    Initializes the database schema if proper tables are missing.
+    Safe to run multiple times (idempotent).
+    """
+    if DB_TYPE != 'sqlite':
+        return # Skip for MySQL to avoid altering legacy DB during audit/migration
+
+    engine = get_engine()
+    try:
+        with engine.connect() as conn:
+            for query in SCHEMA_DEFINITIONS:
+                conn.execute(text(query))
+            # SQLite doesn't strictly need commit for DDL, but good practice
+            pass
+    except Exception as e:
+        print(f"Database Initialization Error: {e}")
 
 def execute_query(query):
     """
