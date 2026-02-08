@@ -17,22 +17,26 @@ An interactive Streamlit dashboard for analyzing PhonePe's Pulse data across pay
 - `data/`: Extracted Pulse data (Aggregated, Map, Top).
 
 ## Installation & Setup
+
 1. **Clone the repository**:
    ```bash
    git clone <your-repo-url>
-   cd PhonePe
+   cd PhonePe-Transaction-Insight
    ```
+
 2. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
-3. **Setup Database**:
-   Configure your MySQL credentials in `src/config.py`.
-4. **Run ETL**:
+
+3. **Initialize Database**:
+   The project now uses an embedded SQLite database. No external MySQL server is required!
+   Run the ETL script once to populate the database from the raw data:
    ```bash
-   python src/etl.py
+   python -m src.etl
    ```
-5. **Launch Dashboard**:
+
+4. **Launch Dashboard**:
    ```bash
    streamlit run main.py
    ```
